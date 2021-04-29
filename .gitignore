@@ -39,3 +39,9 @@ terraform.rc
 
 # ignore zip created by the module
 *.zip
+
+# Python stuff
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
