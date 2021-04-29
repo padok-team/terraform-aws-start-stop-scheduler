@@ -42,3 +42,27 @@ resource "aws_lambda_function" "start_stop_scheduler" {
     }
   }
 }
+
+resource "aws_cloudwatch_event_rule" "start" {
+  name_prefix         = "start_stop_scheduler"
+  schedule_expression = "cron(*/1 * * * ? *)"
+}
+
+resource "aws_cloudwatch_event_target" "start" {
+  rule  = aws_cloudwatch_event_rule.start.id
+  arn   = aws_lambda_function.start_stop_scheduler.arn
+  input = <<EOF
+{
+  "action": "square root",
+  "number": 361
+}
+EOF
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch" {
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.start_stop_scheduler.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.start.arn
+  #  statement_id_prefix = "value"
+}
