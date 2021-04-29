@@ -1,25 +1,28 @@
-terraform {
-  required_providers {
-    test = {
-      source = "terraform.io/builtin/test"
-    }
-    local = {
-      source = "hashicorp/local"
-    }
-  }
-}
+# terraform {
+#   required_version = ">= 0.15"
 
-module "main" {
-  source = "../.."
+#   required_providers {
+#     aws = {
+#       source  = "hashicorp/aws"
+#       version = ">= 3"
+#     }
+#   }
+# }
 
-  another_var = "i am toto!"
-}
+# provider "aws" {
+#   profile = "padok-lab"
+#   region  = "eu-west-3"
+# }
 
-resource "test_assertions" "outputs" {
-  component = "outputs"
-  equal "output" {
-    description = "default output is /main.tf"
-    got         = module.main.main_tf.content
-    want        = file("${path.module}/symlink")
-  }
-}
+# module "main" {
+#   source = "../.."
+# }
+
+# resource "test_assertions" "outputs" {
+#   component = "outputs"
+#   equal "output" {
+#     description = "default output is /main.tf"
+#     got         = module.main.main_tf.content
+#     want        = file("${path.module}/symlink")
+#   }
+# }
