@@ -102,6 +102,4 @@ resource "aws_autoscaling_group" "asg_bis" {
 
 module "aws_start_stop_scheduler" {
   source = "../.."
-
-  another_var = "more than 6 characters"
 }

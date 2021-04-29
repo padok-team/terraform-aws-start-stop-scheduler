@@ -37,20 +37,16 @@ by formatters.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_local"></a> [local](#provider\_local) | n/a |
+| <a name="provider_archive"></a> [archive](#provider\_archive) | >= 2 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3 |
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_another_var"></a> [another\_var](#input\_another\_var) | A variable with a condition. | `string` | n/a | yes |
-| <a name="input_my_var"></a> [my\_var](#input\_my\_var) | A variable with a default value and a condition. | `string` | `"toto!"` | no |
+No inputs.
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_main_tf"></a> [main\_tf](#output\_main\_tf) | n/a |
+No outputs.
 
 
 You can also show something after it!
