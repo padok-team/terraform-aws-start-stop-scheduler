@@ -1,0 +1,46 @@
+formatter: markdown table
+
+sections:
+  hide-all: true
+  show:
+    # - header
+    - providers
+    - inputs
+    - outputs
+
+output:
+  file: README.md
+  mode: inject
+  template: |-
+    <!-- BEGIN_TF_DOCS -->
+    The template can be customized with aribitrary markdown content.
+    For example this can be shown before the actual content generated
+    by formatters.
+
+
+
+    {{ .Content }}
+
+
+    You can also show something after it!
+    <!-- END_TF_DOCS -->
+
+# output-values:
+#   enabled: false
+#   from: "outputs.tf"
+
+
+sort:
+  enabled: true
+  by:
+    - required
+
+settings:
+  anchor: true
+  color: true
+  default: true
+  escape: true
+  indent: 2
+  required: true
+  sensitive: true
+  type: true
