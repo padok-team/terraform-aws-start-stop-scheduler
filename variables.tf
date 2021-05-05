@@ -1,20 +1,50 @@
-# variable "my_var" {
-#   type        = string
-#   description = "A variable with a default value and a condition."
-#   default     = "toto!"
+variable "name" {
+  description = "A name used to create resources in module"
+  type        = string
+  validation {
+    condition     = length(var.name) > 1
+    error_message = "This variable should have more than 1 characters."
+  }
+}
 
-#   validation {
-#     condition     = length(var.my_var) > 4
-#     error_message = "This variable should have more than 4 characters."
-#   }
-# }
+variable "schedules" {
+  description = "The configuration of your crons. Select your resources with tags, and specify several crons for start and stop."
+  type        = list(map(map(string)))
 
-# variable "another_var" {
-#   type        = string
-#   description = "A variable with a condition."
+  # TODO validation
+}
 
-#   validation {
-#     condition     = length(var.another_var) > 6
-#     error_message = "This variable should have more than 6 characters."
-#   }
-# }
+variable "tags" {
+  default     = {}
+  description = "Custom Resource tags"
+  type        = map(string)
+}
+
+variable "lambda_timeout" {
+  default     = 10
+  description = "Amount of time your Lambda Function has to run in seconds."
+  type        = number
+
+  validation {
+    condition     = var.lambda_timeout < 900
+    error_message = "AWS Lambda Quota limits lambda execution to 15 min."
+  }
+}
+
+variable "rds_schedule" {
+  default     = true
+  description = "Run the scheduler on RDS."
+  type        = bool
+}
+
+variable "asg_schedule" {
+  default     = true
+  description = "Run the scheduler on AutoScalingGroup."
+  type        = bool
+}
+
+variable "aws_regions" {
+  default     = null
+  description = "List of AWS region where the scheduler will be applied. By default target the current region."
+  type        = list(string)
+}

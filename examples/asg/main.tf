@@ -102,4 +102,38 @@ resource "aws_autoscaling_group" "asg_bis" {
 
 module "aws_start_stop_scheduler" {
   source = "../.."
+
+  name = "test_asg"
+
+  schedules = [{
+    tag = {
+      key   = "start_stop_scheduler_group",
+      value = "test_asg_2"
+    },
+    starts = {
+      every_20_min = "*/20 * * * ? *",
+      every_hour   = "0 * * * ? *"
+    },
+    stops = {
+      every_20_odd_min = "*/20 * * * ? *",
+      every_mid_hour   = "30 * * * ? *"
+    },
+    },
+    {
+      tag = {
+        key   = "start_stop_scheduler_group",
+        value = "test_asg_1"
+      },
+      starts = {
+        every_hour = "0 * * * ? *"
+      },
+      stops = {
+        every_mid_hour = "30 * * * ? *"
+      },
+    }
+  ]
+
+  tags = {
+    Green = "IT"
+  }
 }
