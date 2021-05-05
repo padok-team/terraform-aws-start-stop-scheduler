@@ -42,7 +42,9 @@ def lambda_handler(event, context):
     logger.info(f"Run {action} function on autoscaling groups")
     asg_scheduler = AutoscalingScheduler()
 
-    for asg in asg_scheduler.list_groups(tag["key"], tag["value"]):
+    asgs = asg_scheduler.list_groups(tag["key"], tag["value"])
+
+    for asg in asgs:
         logger.info(f"Run {action} on {asg}")
 
         if action == "start":
@@ -55,7 +57,7 @@ def lambda_handler(event, context):
                 f"Action '{action}' is not supported. Choose one of [start, stop]."
             )
 
-    response = {"result": "Some stuff has been done."}
+    response = {"action": action, "tag": tag, "affected_resources": {"asg": asgs}}
     return response
 
 
