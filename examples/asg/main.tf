@@ -48,8 +48,8 @@ resource "aws_launch_template" "launch_template" {
 
 }
 
-resource "aws_autoscaling_group" "asg" {
-  name_prefix         = "start_stop_scheduler_1_"
+resource "aws_autoscaling_group" "staging" {
+  name_prefix         = "staging"
   vpc_zone_identifier = data.aws_subnet_ids.default.ids
   desired_capacity    = 2
   max_size            = 3
@@ -62,8 +62,8 @@ resource "aws_autoscaling_group" "asg" {
 
   tags = [
     {
-      "key"                 = "start_stop_scheduler_group"
-      "value"               = "test_asg_1"
+      "key"                 = "Env"
+      "value"               = "staging"
       "propagate_at_launch" = false
     },
     {
@@ -74,8 +74,8 @@ resource "aws_autoscaling_group" "asg" {
   ]
 }
 
-resource "aws_autoscaling_group" "asg_bis" {
-  name_prefix         = "start_stop_scheduler_2_"
+resource "aws_autoscaling_group" "prod" {
+  name_prefix         = "prod"
   vpc_zone_identifier = data.aws_subnet_ids.default.ids
   desired_capacity    = 2
   max_size            = 3
@@ -88,8 +88,8 @@ resource "aws_autoscaling_group" "asg_bis" {
 
   tags = [
     {
-      "key"                 = "start_stop_scheduler_group"
-      "value"               = "test_asg_2"
+      "key"                 = "Env"
+      "value"               = "prod"
       "propagate_at_launch" = false
     },
     {
@@ -103,35 +103,17 @@ resource "aws_autoscaling_group" "asg_bis" {
 module "aws_start_stop_scheduler" {
   source = "../.."
 
-  name = "test_asg"
+  name = "staging_weekday"
 
   schedules = [{
-    tag = {
-      key   = "start_stop_scheduler_group",
-      value = "test_asg_2"
-    },
+    tag = { key = "Env", value = "staging" },
     starts = {
-      every_20_min = "*/20 * * * ? *",
-      every_hour   = "0 * * * ? *"
+      each_weekday_at_6 = "0 6 ? * MON-FRI *"
     },
     stops = {
-      every_20_odd_min = "*/20 * * * ? *",
-      every_mid_hour   = "30 * * * ? *"
-    },
-    },
-    {
-      tag = {
-        key   = "start_stop_scheduler_group",
-        value = "test_asg_1"
-      },
-      starts = {
-        every_hour = "0 * * * ? *"
-      },
-      stops = {
-        every_mid_hour = "30 * * * ? *"
-      },
+      each_weekday_at_18 = "0 18 ? * MON-FRI *"
     }
-  ]
+  }]
 
   tags = {
     Green = "IT"
