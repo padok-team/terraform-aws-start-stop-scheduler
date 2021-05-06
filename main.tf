@@ -1,7 +1,7 @@
 data "aws_region" "current" {}
 
 locals {
-  name_prefix = "${var.name}_start_stop_scheduler"
+  name_prefix = "${var.name}_scheduler"
 }
 
 data "aws_iam_policy_document" "lambda_assume_role_policy" {

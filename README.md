@@ -1,37 +1,97 @@
 # Terraform Module AWS start_stop_scheduler
 
+## General information
+
+This module helps you shutdown AWS resources you don't use at night or during weekends to keep both your $ and CO² bills low!
+
+It uses a *lambda* function and a few *cronjobs* to trigger a *start* or *stop* function at a given hour, on a subset of your AWS resources, selected by a *tag*.
+
+It supports :
+- **AutoscalingGroups**: it suspends the ASG and terminates its instances. At the start, it resumes the ASG, which launches new instances by itself.
+- ~~RDS~~: soon
+- ~~EC2 instances~~: maybe
+
+The lambda function is _idempotent_, so you can launch it on an already stopped/started resource without any risks! It simplifies your job when planning with crons.
+
+![aws_schema](./docs/assets/aws_schema.png)
+
+### About cronjobs
+
+If you don't know much about crons, check <https://cron.help/>.
+
+:warning: Beware, the AWS syntax is a bit special, check [their documentation](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-schedule-expressions.html#eb-cron-expressions) :
+- It adds a 6th character for the year.
+- You cannot set '*' for both Day-of-week and Day-of-month
+
+:alarm-clock: All the cronjobs expressions are in UTC time ! Check your current timezone and do the maths.
+
 ## Compatibility
 
-This module is meant for use with Terraform >= 0.12.6.
-
-## Requirements
-
-* [terraform-docs](https://github.com/terraform-docs/terraform-docs)
-* [pre-commit](https://pre-commit.com/)
-
-## Contributing
-
-Refer to the [contribution guidelines](./CONTRIBUTING.md) for
-information on contributing to this module.
+This module is meant for use with Terraform >= 0.13 and `aws` provider >= 2.
 
 ## Usage
 
-This module can be installed using Padok's registry:
+This module can be installed using Padok's registry.
+
+For example, if you want to shutdown during nights and weekends all staging resources :
+- each night at 18:00 UTC (20:00 for France), stop resources with tag `Env=staging`
+- each morning at 6:00 UTC (8:00 for France), stop resources with tag `Env=staging`
+
 
 ```hcl
 module "aws_start_stop_scheduler" {
   source = "terraform-registry.playground.padok.cloud/incubator/start_stop_scheduler/aws"
-  version = "vX.Y.Z"
-  # ... other module's arguments
+  version = "v0.1.0"
+
+  name = "start_stop_scheduler"
+  schedules = [{
+    tag = { key = "Env", value = "staging" },
+    starts = {
+      each_weekday_at_6 = "0 6 ? * MON-FRI *"
+    },
+    stops = {
+      each_weekday_at_18 = "0 18 ? * MON-FRI *"
+    }
+  }]
 }
 ```
 
+_You can provide a list of schedule (each targeting a tag) and you can specify several start and stop crons for each tag._. For example, here a valid conf :
+
+```hcl
+  schedules = [{
+    tag = { key = "Env", value = "staging" },
+    starts = {
+      each_weekday_at_6 = "0 6 ? * MON-FRI *"
+    },
+    stops = {
+      each_weekday_at_18 = "0 18 ? * MON-FRI *"
+      # Nobody works friday afternoon
+      # The lambda is idempotent, you can have redundant crons
+      each_friday_at_14 = "0 14 ? * FRI *"
+    }
+  },
+  {
+    tag = { key = "Env", value = "sandbox },
+    # at 0, 3, 6, 9 AM etc...
+    starts = {}
+    stops = {
+      each_day_every_3_hours = "0 */3 * * ? *"
+    }
+  }
+  ]
+}
+```
+
+You can check at [`examples/asg`](./examples/asg) for a complete example with AutoScalingGroups.
+
+You can also test the deployed lambda function with arbitrary arguments :
+
+```bash
+aws lambda invoke --function-name <function_name_from_output> --payload '{"action": "start", "tag": {"key": "Env", "value": "staging"}}' --cli-binary-format raw-in-base64-out out.txt
+```
+
 <!-- BEGIN_TF_DOCS -->
-The template can be customized with aribitrary markdown content.
-For example this can be shown before the actual content generated
-by formatters.
-
-
 
 ## Providers
 
@@ -67,11 +127,22 @@ by formatters.
 | <a name="output_lambda_iam_role_arn"></a> [lambda\_iam\_role\_arn](#output\_lambda\_iam\_role\_arn) | The ARN of the IAM role used by Lambda function |
 | <a name="output_lambda_iam_role_name"></a> [lambda\_iam\_role\_name](#output\_lambda\_iam\_role\_name) | The name of the IAM role used by Lambda function |
 
-
-You can also show something after it!
 <!-- END_TF_DOCS -->
+## Contributing
 
-## File structure
+Refer to the [contribution guidelines](./CONTRIBUTING.md) for
+information on contributing to this module.
+
+__Please open GitLab issues for any problems encoutered when using the module, or suggestions !__
+
+You can find the initial draft document [here](https://www.notion.so/m33/Extinction-des-machines-hors-prod-la-nuit-et-weekend-20398489023d4fa9ba847b84efe44d79).
+
+### Requirements
+
+* [terraform-docs](https://github.com/terraform-docs/terraform-docs)
+* [pre-commit](https://pre-commit.com/)
+
+### File structure
 
 The project has the following folders and files:
 
