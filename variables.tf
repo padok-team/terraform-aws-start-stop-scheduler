@@ -48,3 +48,9 @@ variable "aws_regions" {
   description = "List of AWS region where the scheduler will be applied. By default target the current region."
   type        = list(string)
 }
+
+variable "custom_iam_lambda_role_arn" {
+  default     = null
+  description = "Custom role used for the lambda. Useful if you cannot create IAM ressource directly with your AWS profile, or to share a role between several resources."
+  type        = string
+}

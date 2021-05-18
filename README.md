@@ -41,7 +41,7 @@ For example, if you want to shutdown during nights and weekends all staging reso
 ```hcl
 module "aws_start_stop_scheduler" {
   source = "terraform-registry.playground.padok.cloud/incubator/start_stop_scheduler/aws"
-  version = "v0.1.0"
+  version = "v0.3.0"
 
   name = "start_stop_scheduler"
   schedules = [{
@@ -108,6 +108,7 @@ aws lambda invoke --function-name <function_name_from_output> --payload '{"actio
 | <a name="input_schedules"></a> [schedules](#input\_schedules) | The configuration of your crons. Select your resources with tags, and specify several crons for start and stop. | `list(map(map(string)))` | n/a | yes |
 | <a name="input_asg_schedule"></a> [asg\_schedule](#input\_asg\_schedule) | Run the scheduler on AutoScalingGroup. | `bool` | `true` | no |
 | <a name="input_aws_regions"></a> [aws\_regions](#input\_aws\_regions) | List of AWS region where the scheduler will be applied. By default target the current region. | `list(string)` | `null` | no |
+| <a name="input_custom_iam_lambda_role_arn"></a> [custom\_iam\_lambda\_role\_arn](#input\_custom\_iam\_lambda\_role\_arn) | Custom role used for the lambda. Useful if you cannot create IAM ressource directly with your AWS profile, or to share a role between several resources. | `string` | `null` | no |
 | <a name="input_lambda_timeout"></a> [lambda\_timeout](#input\_lambda\_timeout) | Amount of time your Lambda Function has to run in seconds. | `number` | `10` | no |
 | <a name="input_rds_schedule"></a> [rds\_schedule](#input\_rds\_schedule) | Run the scheduler on RDS. | `bool` | `true` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Custom Resource tags | `map(string)` | `{}` | no |
