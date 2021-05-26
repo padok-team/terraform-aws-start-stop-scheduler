@@ -12,13 +12,14 @@ from time import sleep
 from typing import List, Dict
 
 from scheduler.autoscaling import list_asg_by_tags
+from scheduler.rds import list_rds_by_tags
 
 logging.basicConfig()
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 ASG_SCHEDULE = os.getenv("ASG_SCHEDULE", "true")
-RDS_SCHEDULE = os.getenv("RDS_SCHEDULE", "true ")
+RDS_SCHEDULE = os.getenv("RDS_SCHEDULE", "true")
 
 
 def lambda_handler(event, context):
@@ -56,7 +57,7 @@ def lambda_handler(event, context):
         logger.info(f"Run {action} function on {len(asgs)} autoscaling groups")
 
         for asg in asgs:
-            logger.info(f"Run {action} on {asg}")
+            logger.info(f"Run {action} on {asg.name}")
             if action == "start":
                 asg.start()
             elif action == "stop":
@@ -65,47 +66,36 @@ def lambda_handler(event, context):
 
         response["affected_resources"]["asg"] = [a.name for a in asgs]
 
+    if RDS_SCHEDULE == "true":
+
+        logger.info(f"Select RDS instances with tags {tag['key']}={tag['value']}")
+        rds_list = list_rds_by_tags(tag["key"], tag["value"])
+
+        logger.info(f"Run {action} function on {len(rds_list)} rds instances")
+
+        for rds in rds_list:
+            logger.info(f"Run {action} on {rds.db_id}")
+            if action == "start":
+                rds.start()
+            elif action == "stop":
+                rds.stop()
+
+        response["affected_resources"]["rds"] = [r.db_id for r in rds_list]
+
     return response
 
 
 if __name__ == "__main__":
+    print("\n------\n")
     print(
         lambda_handler(
-            {
-                "action": "stop",
-                "tag": {"key": "start_stop_scheduler_group", "value": "test_asg_2"},
-            },
-            {},
+            {"action": "stop", "tag": {"key": "Project", "value": "GreenIT"}}, {}
         )
     )
     print("\n------\n")
     print(
         lambda_handler(
-            {
-                "action": "stop",
-                "tag": {"key": "start_stop_scheduler_group", "value": "test_asg_2"},
-            },
-            {},
-        )
-    )
-    print("\n------\n")
-    print(
-        lambda_handler(
-            {
-                "action": "start",
-                "tag": {"key": "start_stop_scheduler_group", "value": "test_asg_2"},
-            },
-            {},
-        )
-    )
-    print("\n------\n")
-    print(
-        lambda_handler(
-            {
-                "action": "start",
-                "tag": {"key": "start_stop_scheduler_group", "value": "test_asg_2"},
-            },
-            {},
+            {"action": "stop", "tag": {"key": "Project", "value": "GreenIT"}}, {}
         )
     )
     print("\n------\n")
@@ -117,6 +107,6 @@ if __name__ == "__main__":
     print("\n------\n")
     print(
         lambda_handler(
-            {"action": "stop", "tag": {"key": "Project", "value": "GreenIT"}}, {}
+            {"action": "start", "tag": {"key": "Project", "value": "GreenIT"}}, {}
         )
     )

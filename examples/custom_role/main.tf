@@ -135,6 +135,9 @@ data "aws_iam_policy_document" "lambda_autoscalinggroup" {
       "autoscaling:DescribeAutoScalingInstances",
       "autoscaling:TerminateInstanceInAutoScalingGroup",
       "ec2:TerminateInstances",
+      "rds:StartDBInstance",
+      "rds:StopDBInstance",
+      "tag:GetResources",
     ]
 
     resources = [
@@ -158,15 +161,15 @@ module "aws_start_stop_scheduler" {
   custom_iam_lambda_role     = true
   custom_iam_lambda_role_arn = aws_iam_role.lambda.arn
 
-  schedules = [{
-    tag = { key = "Env", value = "staging" },
-    starts = {
-      each_weekday_at_6 = "0 6 ? * MON-FRI *"
-    },
-    stops = {
-      each_weekday_at_18 = "0 18 ? * MON-FRI *"
+  schedules = [
+    {
+      name      = "weekday_working_hours",
+      start     = "0 6 ? * MON-FRI *",
+      stop      = "0 18 ? * MON-FRI *",
+      tag_key   = "Env",
+      tag_value = "staging",
     }
-  }]
+  ]
 
   tags = {
     Green = "IT"

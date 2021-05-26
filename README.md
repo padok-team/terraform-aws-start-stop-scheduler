@@ -8,7 +8,7 @@ It uses a *lambda* function and a few *cronjobs* to trigger a *start* or *stop* 
 
 It supports :
 - **AutoscalingGroups**: it suspends the ASG and terminates its instances. At the start, it resumes the ASG, which launches new instances by itself.
-- ~~RDS~~: soon
+- RDS: support simple RDS DB instance. Run the function stop and start on them.
 - ~~EC2 instances~~: maybe
 
 The lambda function is _idempotent_, so you can launch it on an already stopped/started resource without any risks! It simplifies your job when planning with crons.
@@ -44,46 +44,55 @@ module "aws_start_stop_scheduler" {
   version = "v0.4.0"
 
   name = "start_stop_scheduler"
-  schedules = [{
-    tag = { key = "Env", value = "staging" },
-    starts = {
-      each_weekday_at_6 = "0 6 ? * MON-FRI *"
-    },
-    stops = {
-      each_weekday_at_18 = "0 18 ? * MON-FRI *"
+  schedules = [
+    {
+      name      = "weekday_working_hours",
+      start     = "0 6 ? * MON-FRI *",
+      stop      = "0 18 ? * MON-FRI *",
+      tag_key   = "Env",
+      tag_value = "staging",
     }
-  }]
-}
-```
-
-_You can provide a list of schedule (each targeting a tag) and you can specify several start and stop crons for each tag._. For example, here a valid conf :
-
-```hcl
-  schedules = [{
-    tag = { key = "Env", value = "staging" },
-    starts = {
-      each_weekday_at_6 = "0 6 ? * MON-FRI *"
-    },
-    stops = {
-      each_weekday_at_18 = "0 18 ? * MON-FRI *"
-      # Nobody works friday afternoon
-      # The lambda is idempotent, you can have redundant crons
-      each_friday_at_14 = "0 14 ? * FRI *"
-    }
-  },
-  {
-    tag = { key = "Env", value = "sandbox },
-    # at 0, 3, 6, 9 AM etc...
-    starts = {}
-    stops = {
-      each_day_every_3_hours = "0 */3 * * ? *"
-    }
-  }
   ]
 }
 ```
 
-You can check at [`examples/asg`](./examples/asg) for a complete example with AutoScalingGroups.
+_You can choose to only start or stop a set of resources by omitting start or stop._ For example, here a valid conf :
+
+```hcl
+schedules = [
+    {
+      name      = "stop_at_night",
+      start     = "",
+      stop      = "0 18 ? * MON-FRI *",
+      tag_key   = "Env",
+      tag_value = "sandbox",
+    }
+  ]
+```
+
+_You may also set up several schedule in the same module. The **name** parameter must be unique between schedules._
+
+```hcl
+schedules = [
+    {
+      name      = "weekday_working_hours",
+      start     = "0 6 ? * MON-FRI *",
+      stop      = "0 18 ? * MON-FRI *",
+      tag_key   = "Env",
+      tag_value = "staging",
+    },
+    {
+      name      = "stop_at_night",
+      start     = "",
+      stop      = "0 18 ? * MON-FRI *",
+      tag_key   = "Env",
+      tag_value = "sandbox",
+    }
+  ]
+```
+
+
+You can check at [`examples/asg`](./examples/asg) for a complete example with AutoScalingGroups, and [`examples/rds`](./examples/asg) for RDS.
 
 You can also test the deployed lambda function with arbitrary arguments :
 
@@ -105,7 +114,7 @@ aws lambda invoke --function-name <function_name_from_output> --payload '{"actio
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_name"></a> [name](#input\_name) | A name used to create resources in module | `string` | n/a | yes |
-| <a name="input_schedules"></a> [schedules](#input\_schedules) | The configuration of your crons. Select your resources with tags, and specify several crons for start and stop. | `list(map(map(string)))` | n/a | yes |
+| <a name="input_schedules"></a> [schedules](#input\_schedules) | List of map containing, the following keys: name (for jobs name), start (cron for the start schedule), stop (cron for stop schedule), tag\_key and tag\_value (target recources) | <pre>list(object({<br>    name      = string<br>    start     = string<br>    stop      = string<br>    tag_key   = string<br>    tag_value = string<br>  }))</pre> | n/a | yes |
 | <a name="input_asg_schedule"></a> [asg\_schedule](#input\_asg\_schedule) | Run the scheduler on AutoScalingGroup. | `bool` | `true` | no |
 | <a name="input_aws_regions"></a> [aws\_regions](#input\_aws\_regions) | List of AWS region where the scheduler will be applied. By default target the current region. | `list(string)` | `null` | no |
 | <a name="input_custom_iam_lambda_role"></a> [custom\_iam\_lambda\_role](#input\_custom\_iam\_lambda\_role) | Use a custom role used for the lambda. Useful if you cannot create IAM ressource directly with your AWS profile, or to share a role between several resources. | `bool` | `false` | no |
