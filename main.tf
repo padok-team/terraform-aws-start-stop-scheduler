@@ -66,12 +66,13 @@ data "archive_file" "lambda_zip" {
 }
 
 resource "aws_cloudwatch_log_group" "start_stop_scheduler" {
-  name              = "/aws/lambda/${aws_lambda_function.start_stop_scheduler.function_name}"
+  name              = "/aws/lambda/${local.name_prefix}"
   retention_in_days = 14
   tags              = var.tags
 }
 
 resource "aws_lambda_function" "start_stop_scheduler" {
+  depends_on    = [aws_cloudwatch_log_group.start_stop_scheduler]
   filename      = data.archive_file.lambda_zip.output_path
   function_name = local.name_prefix
   role          = var.custom_iam_lambda_role ? var.custom_iam_lambda_role_arn : aws_iam_role.lambda[0].arn
