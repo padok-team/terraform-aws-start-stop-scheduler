@@ -58,6 +58,46 @@ resource "aws_iam_role_policy" "lambda_autoscalinggroup" {
   policy      = data.aws_iam_policy_document.lambda_autoscalinggroup.json
 }
 
+data "aws_iam_policy_document" "lambda_tagging_api" {
+  statement {
+    actions = [
+      "tag:GetResources",
+    ]
+
+    resources = [
+      "*",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "lambda_tagging_api" {
+  count = var.custom_iam_lambda_role ? 0 : 1
+
+  name_prefix = "${local.name_prefix}_tagging_api"
+  role        = aws_iam_role.lambda[0].id
+  policy      = data.aws_iam_policy_document.lambda_tagging_api.json
+}
+
+data "aws_iam_policy_document" "lambda_rds" {
+  statement {
+    actions = [
+      "rds:StartDBInstance",
+      "rds:StopDBInstance",
+    ]
+
+    resources = [
+      "*",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "lambda_rds" {
+  count = var.custom_iam_lambda_role ? 0 : 1
+
+  name_prefix = "${local.name_prefix}_rds"
+  role        = aws_iam_role.lambda[0].id
+  policy      = data.aws_iam_policy_document.lambda_rds.json
+}
 
 data "archive_file" "lambda_zip" {
   type        = "zip"
