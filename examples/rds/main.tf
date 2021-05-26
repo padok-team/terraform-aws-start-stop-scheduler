@@ -42,17 +42,15 @@ module "aws_start_stop_scheduler" {
 
   name = "week_stag_rds"
 
-  schedules = [{
-    tag = { key = "Env", value = "staging" },
-    starts = {
-      each_weekday_at_6   = "0 6 ? * MON-FRI *",
-      each_even_10_minute = "0/20 * ? * * *",
-    },
-    stops = {
-      each_weekday_at_18 = "0 18 ? * MON-FRI *",
-      each_odd_10_minute = "10/20 * ? * * *",
+  schedules = [
+    {
+      name      = "each_20_minute",
+      start     = "0/20 * ? * * *",
+      stop      = "10/20 * ? * * *",
+      tag_key   = "Env",
+      tag_value = "staging",
     }
-  }]
+  ]
 
   tags = {
     Green = "IT"
