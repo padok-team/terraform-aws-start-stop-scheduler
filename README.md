@@ -41,7 +41,7 @@ For example, if you want to shutdown during nights and weekends all staging reso
 ```hcl
 module "aws_start_stop_scheduler" {
   source = "terraform-registry.playground.padok.cloud/incubator/start_stop_scheduler/aws"
-  version = "v0.3.0"
+  version = "v0.4.0"
 
   name = "start_stop_scheduler"
   schedules = [{
