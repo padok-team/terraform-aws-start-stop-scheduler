@@ -135,6 +135,9 @@ data "aws_iam_policy_document" "lambda_autoscalinggroup" {
       "autoscaling:DescribeAutoScalingInstances",
       "autoscaling:TerminateInstanceInAutoScalingGroup",
       "ec2:TerminateInstances",
+      "rds:StartDBInstance",
+      "rds:StopDBInstance",
+      "tag:GetResources",
     ]
 
     resources = [
