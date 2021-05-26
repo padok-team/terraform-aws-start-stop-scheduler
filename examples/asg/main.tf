@@ -120,4 +120,7 @@ module "aws_start_stop_scheduler" {
   tags = {
     Green = "IT"
   }
+
+  asg_schedule = true
+  rds_schedule = false
 }
