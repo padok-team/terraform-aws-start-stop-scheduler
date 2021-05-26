@@ -45,3 +45,6 @@ terraform.rc
 __pycache__/
 *.py[cod]
 *$py.class
+
+# VS Code
+.vscode/

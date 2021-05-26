@@ -6,39 +6,36 @@ Autoscaling instances scheduler.
 Source: https://github.com/diodonfrost/terraform-aws-lambda-scheduler-stop-start/blob/master/package/scheduler/autoscaling_handler.py
 """
 import logging
-from typing import Dict, Iterator, List
+from dataclasses import dataclass
+from typing import Dict, Iterator, List, Any
 
 import boto3
-
 from botocore.exceptions import ClientError
 
-import boto3
 
 logger = logging.getLogger()
 
 
-class AutoscalingScheduler(object):
-    """Abstract autoscaling scheduler in a class."""
+@dataclass
+class AutoScalingGroup:
+    """Autoscaling group"""
 
-    def __init__(self) -> None:
-        """Initialize autoscaling scheduler."""
-        self.ec2 = boto3.client("ec2")
-        self.asg = boto3.client("autoscaling")
+    name: str
+    ec2: Any
+    asg: Any
 
-    def stop(self, asg_name: str, terminate: bool = True) -> None:
-        """Aws autoscaling suspend function.
+    def stop(self, terminate=True) -> None:
+        """
+        Aws autoscaling suspend function.
 
         Suspend autoscaling group and stop its instances
         with defined tag.
-
-        :param str asg_name:
-            Name of the ASG to stop
         """
-        instance_id_list = self.list_instances(asg_name)
+        instance_id_list = self._list_instances()
 
         try:
-            self.asg.suspend_processes(AutoScalingGroupName=asg_name)
-            logger.info("Suspend autoscaling group {0}".format(asg_name))
+            self.asg.suspend_processes(AutoScalingGroupName=self.name)
+            logger.info("Suspend autoscaling group {0}".format(self.name))
         except ClientError as exc:
             # ec2_exception("instance", asg_name, exc)
             logger.warn(exc)
@@ -58,21 +55,19 @@ class AutoscalingScheduler(object):
                 # ec2_exception("autoscaling group", instance_id, exc)
                 logger.warn(exc)
 
-    def start(self, asg_name: str, terminate: bool = True) -> None:
-        """Aws autoscaling resume function.
+    def start(self, terminate: bool = True) -> None:
+        """
+        Aws autoscaling resume function.
 
         Resume autoscaling group and start its instances
         with defined tag.
-
-        :param str asg_name:
-            Name of the ASG to start
-
         """
-        instance_id_list = self.list_instances(asg_name)
-        instance_running_ids = []
 
         # Start autoscaling instance
         if not (terminate):
+            instance_id_list = self._list_instances()
+            instance_running_ids = []
+
             for instance_id in instance_id_list:
                 try:
                     self.ec2.start_instances(InstanceIds=[instance_id])
@@ -86,37 +81,13 @@ class AutoscalingScheduler(object):
             # self.waiter.instance_running(instance_ids=instance_running_ids)
 
         try:
-            self.asg.resume_processes(AutoScalingGroupName=asg_name)
-            logger.info("Resume autoscaling group {0}".format(asg_name))
+            self.asg.resume_processes(AutoScalingGroupName=self.name)
+            logger.info("Resume autoscaling group {0}".format(self.name))
         except ClientError as exc:
             # ec2_exception("autoscaling group", asg_name, exc)
             logger.warn(exc)
 
-    def list_groups(self, tag_key: str, tag_value: str) -> List[str]:
-        """Aws autoscaling list function.
-
-        List name of all autoscaling groups with
-        specific tag and return it in list.
-
-        :param str tag_key:
-            Aws tag key to use for filter resources
-        :param str tag_value:
-            Aws tag value to use for filter resources
-
-        :return list asg_name_list:
-            The names of the Auto Scaling groups
-        """
-        asg_name_list = []
-        paginator = self.asg.get_paginator("describe_auto_scaling_groups")
-
-        for page in paginator.paginate():
-            for group in page["AutoScalingGroups"]:
-                for tag in group["Tags"]:
-                    if tag["Key"] == tag_key and tag["Value"] == tag_value:
-                        asg_name_list.append(group["AutoScalingGroupName"])
-        return asg_name_list
-
-    def list_instances(self, asg_name: str) -> Iterator[str]:
+    def _list_instances(self) -> Iterator[str]:
         """Aws autoscaling instance list function.
 
         List name of all instances in the autoscaling group
@@ -128,11 +99,43 @@ class AutoscalingScheduler(object):
         :yield Iterator[str]:
             The names of the instances in Auto Scaling group.
         """
-        if not asg_name:
+        if not self.name:
             return iter([])
         paginator = self.asg.get_paginator("describe_auto_scaling_groups")
 
-        for page in paginator.paginate(AutoScalingGroupNames=[asg_name]):
+        for page in paginator.paginate(AutoScalingGroupNames=[self.name]):
             for scalinggroup in page["AutoScalingGroups"]:
                 for instance in scalinggroup["Instances"]:
                     yield instance["InstanceId"]
+
+
+def list_asg_by_tags(tag_key: str, tag_value: str) -> List[AutoScalingGroup]:
+    """Aws autoscaling list function.
+
+    List name of all autoscaling groups with
+    specific tag and return it in list.
+
+    :param str tag_key:
+        Aws tag key to use for filter resources
+    :param str tag_value:
+        Aws tag value to use for filter resources
+
+    :return list asg_name_list:
+        The names of the Auto Scaling groups
+    """
+
+    asg = boto3.client("autoscaling")
+    ec2 = boto3.client("ec2")
+    asgs = []
+    paginator = asg.get_paginator("describe_auto_scaling_groups")
+
+    for page in paginator.paginate():
+        for group in page["AutoScalingGroups"]:
+            for tag in group["Tags"]:
+                if tag["Key"] == tag_key and tag["Value"] == tag_value:
+                    asgs.append(
+                        AutoScalingGroup(
+                            name=group["AutoScalingGroupName"], ec2=ec2, asg=asg
+                        )
+                    )
+    return asgs

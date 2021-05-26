@@ -108,10 +108,12 @@ module "aws_start_stop_scheduler" {
   schedules = [{
     tag = { key = "Env", value = "staging" },
     starts = {
-      each_weekday_at_6 = "0 6 ? * MON-FRI *"
+      each_weekday_at_6 = "0 6 ? * MON-FRI *",
+      # each_even_minute = "0/2 * ? * * *",
     },
     stops = {
-      each_weekday_at_18 = "0 18 ? * MON-FRI *"
+      each_weekday_at_18 = "0 18 ? * MON-FRI *",
+      # each_odd_minute = "1/2 * ? * * *",
     }
   }]
 
