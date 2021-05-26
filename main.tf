@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "lambda_assume_role_policy" {
 }
 
 resource "aws_iam_role" "lambda" {
-  count              = var.custom_iam_lambda_role_arn == null ? 1 : 0
+  count              = var.custom_iam_lambda_role ? 0 : 1
   name_prefix        = local.name_prefix
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy.json
 
@@ -25,7 +25,7 @@ resource "aws_iam_role" "lambda" {
 
 
 resource "aws_iam_role_policy_attachment" "lambda_basic" {
-  count      = var.custom_iam_lambda_role_arn == null ? 1 : 0
+  count      = var.custom_iam_lambda_role ? 0 : 1
   role       = aws_iam_role.lambda[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
@@ -51,7 +51,7 @@ data "aws_iam_policy_document" "lambda_autoscalinggroup" {
 }
 
 resource "aws_iam_role_policy" "lambda_autoscalinggroup" {
-  count = var.custom_iam_lambda_role_arn == null ? 1 : 0
+  count = var.custom_iam_lambda_role ? 0 : 1
 
   name_prefix = "${local.name_prefix}_autoscaling"
   role        = aws_iam_role.lambda[0].id
@@ -74,7 +74,7 @@ resource "aws_cloudwatch_log_group" "start_stop_scheduler" {
 resource "aws_lambda_function" "start_stop_scheduler" {
   filename      = data.archive_file.lambda_zip.output_path
   function_name = local.name_prefix
-  role          = var.custom_iam_lambda_role_arn == null ? aws_iam_role.lambda[0].arn : var.custom_iam_lambda_role_arn
+  role          = var.custom_iam_lambda_role ? var.custom_iam_lambda_role_arn : aws_iam_role.lambda[0].arn
   handler       = "scheduler.main.lambda_handler"
   timeout       = var.lambda_timeout
 

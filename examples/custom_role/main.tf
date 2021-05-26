@@ -153,11 +153,9 @@ resource "aws_iam_role_policy" "lambda_autoscalinggroup" {
 module "aws_start_stop_scheduler" {
   source = "../.."
 
-  depends_on = [
-    aws_iam_role.lambda
-  ]
   name = "custom_role"
 
+  custom_iam_lambda_role     = true
   custom_iam_lambda_role_arn = aws_iam_role.lambda.arn
 
   schedules = [{

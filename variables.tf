@@ -49,8 +49,14 @@ variable "aws_regions" {
   type        = list(string)
 }
 
+variable "custom_iam_lambda_role" {
+  default     = false
+  description = "Use a custom role used for the lambda. Useful if you cannot create IAM ressource directly with your AWS profile, or to share a role between several resources."
+  type        = bool
+}
+
 variable "custom_iam_lambda_role_arn" {
   default     = null
-  description = "Custom role used for the lambda. Useful if you cannot create IAM ressource directly with your AWS profile, or to share a role between several resources."
+  description = "Custom role arn used for the lambda. Used only if custom_iam_lambda_role is set to true."
   type        = string
 }

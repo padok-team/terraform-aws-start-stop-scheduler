@@ -41,7 +41,7 @@ For example, if you want to shutdown during nights and weekends all staging reso
 ```hcl
 module "aws_start_stop_scheduler" {
   source = "terraform-registry.playground.padok.cloud/incubator/start_stop_scheduler/aws"
-  version = "v0.3.0"
+  version = "v0.4.0"
 
   name = "start_stop_scheduler"
   schedules = [{
@@ -108,7 +108,8 @@ aws lambda invoke --function-name <function_name_from_output> --payload '{"actio
 | <a name="input_schedules"></a> [schedules](#input\_schedules) | The configuration of your crons. Select your resources with tags, and specify several crons for start and stop. | `list(map(map(string)))` | n/a | yes |
 | <a name="input_asg_schedule"></a> [asg\_schedule](#input\_asg\_schedule) | Run the scheduler on AutoScalingGroup. | `bool` | `true` | no |
 | <a name="input_aws_regions"></a> [aws\_regions](#input\_aws\_regions) | List of AWS region where the scheduler will be applied. By default target the current region. | `list(string)` | `null` | no |
-| <a name="input_custom_iam_lambda_role_arn"></a> [custom\_iam\_lambda\_role\_arn](#input\_custom\_iam\_lambda\_role\_arn) | Custom role used for the lambda. Useful if you cannot create IAM ressource directly with your AWS profile, or to share a role between several resources. | `string` | `null` | no |
+| <a name="input_custom_iam_lambda_role"></a> [custom\_iam\_lambda\_role](#input\_custom\_iam\_lambda\_role) | Use a custom role used for the lambda. Useful if you cannot create IAM ressource directly with your AWS profile, or to share a role between several resources. | `bool` | `false` | no |
+| <a name="input_custom_iam_lambda_role_arn"></a> [custom\_iam\_lambda\_role\_arn](#input\_custom\_iam\_lambda\_role\_arn) | Custom role arn used for the lambda. Used only if custom\_iam\_lambda\_role is set to true. | `string` | `null` | no |
 | <a name="input_lambda_timeout"></a> [lambda\_timeout](#input\_lambda\_timeout) | Amount of time your Lambda Function has to run in seconds. | `number` | `10` | no |
 | <a name="input_rds_schedule"></a> [rds\_schedule](#input\_rds\_schedule) | Run the scheduler on RDS. | `bool` | `true` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Custom Resource tags | `map(string)` | `{}` | no |
@@ -129,6 +130,26 @@ aws lambda invoke --function-name <function_name_from_output> --payload '{"actio
 | <a name="output_lambda_iam_role_name"></a> [lambda\_iam\_role\_name](#output\_lambda\_iam\_role\_name) | The name of the IAM role used by Lambda function |
 
 <!-- END_TF_DOCS -->
+
+## Advanced features
+
+### Custom role
+
+In some cases, you might not be able to create IAM resources with the same role used to create the lambda function, or you might want to share a common role between several modules. In that case, you can provide a _custom iam role_ to the module, which will be used instead of the one created inside the module.
+
+In that case you need to set both variables `custom_iam_lambda_role` and `custom_iam_lambda_role_arn`.
+
+```hcl
+module "aws_start_stop_scheduler" {
+  ...
+
+  custom_iam_lambda_role = true
+  custom_iam_lambda_role_arn = aws_iam_role.lambda.arn
+}
+```
+
+You have a full working example in [examples/custom_role](./examples/custom_role).
+
 ## Contributing
 
 Refer to the [contribution guidelines](./CONTRIBUTING.md) for
