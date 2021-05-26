@@ -134,83 +134,56 @@ resource "aws_lambda_function" "start_stop_scheduler" {
   tags = var.tags
 }
 
-locals {
-  flatten_starts = { for index, v in flatten([for sched in var.schedules : [
-    for key, value in sched.starts : {
-      tag   = sched.tag,
-      start = { cron = value, description = key },
-    }
-  ]]) : index => v }
 
-  flatten_stops = { for index, v in flatten([for sched in var.schedules : [
-    for key, value in sched.stops : {
-      tag  = sched.tag,
-      stop = { cron = value, description = key },
-    }
-  ]]) : index => v }
+locals {
+  start_schedulers = [for schedule in var.schedules : {
+    name      = "start-${schedule.name}"
+    action    = "start"
+    cron      = schedule.start
+    tag_key   = schedule.tag_key
+    tag_value = schedule.tag_value
+  } if schedule.start != ""]
+
+  stop_schedulers = [for schedule in var.schedules : {
+    name      = "stop-${schedule.name}"
+    action    = "stop"
+    cron      = schedule.stop
+    tag_key   = schedule.tag_key
+    tag_value = schedule.tag_value
+  } if schedule.stop != ""]
+
+  schedulers_map = { for scheduler in concat(local.start_schedulers, local.stop_schedulers) : scheduler.name => scheduler }
 }
 
-resource "aws_cloudwatch_event_rule" "start" {
-  for_each = local.flatten_starts
 
-  name_prefix         = "${local.name_prefix}_start"
-  schedule_expression = "cron(${each.value.start.cron})"
-  description         = "Start ressources with tag ${each.value.tag.key}=${each.value.tag.value} with cron '${each.value.start.description}'"
+resource "aws_cloudwatch_event_rule" "start_stop" {
+  for_each = local.schedulers_map
+
+  name                = "${local.name_prefix}_${each.key}"
+  schedule_expression = "cron(${each.value.cron})"
+  description         = "${each.key} - ${each.value.tag_key}=${each.value.tag_value}"
   tags                = var.tags
 }
 
-resource "aws_cloudwatch_event_target" "start" {
-  for_each = local.flatten_starts
+resource "aws_cloudwatch_event_target" "start_stop" {
+  for_each = local.schedulers_map
 
-  rule = aws_cloudwatch_event_rule.start[each.key].id
+  rule = aws_cloudwatch_event_rule.start_stop[each.key].id
   arn  = aws_lambda_function.start_stop_scheduler.arn
   input = jsonencode({
-    "action" : "start",
+    "action" : each.value.action,
     "tag" : {
-      "key" : each.value.tag.key,
-      "value" : each.value.tag.value,
+      "key" : each.value.tag_key,
+      "value" : each.value.tag_value,
     }
   })
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_start" {
-  for_each = local.flatten_starts
+  for_each = local.schedulers_map
 
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.start_stop_scheduler.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.start[each.key].arn
-}
-
-
-resource "aws_cloudwatch_event_rule" "stop" {
-  for_each = local.flatten_stops
-
-  name_prefix         = "${local.name_prefix}_stop"
-  schedule_expression = "cron(${each.value.stop.cron})"
-  description         = "Stop ressources with tag ${each.value.tag.key}=${each.value.tag.value} with cron '${each.value.stop.description}'"
-  tags                = var.tags
-}
-
-resource "aws_cloudwatch_event_target" "stop" {
-  for_each = local.flatten_stops
-
-  rule = aws_cloudwatch_event_rule.stop[each.key].id
-  arn  = aws_lambda_function.start_stop_scheduler.arn
-  input = jsonencode({
-    "action" : "stop",
-    "tag" : {
-      "key" : each.value.tag.key,
-      "value" : each.value.tag.value,
-    }
-  })
-}
-
-resource "aws_lambda_permission" "allow_cloudwatch_stop" {
-  for_each = local.flatten_stops
-
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.start_stop_scheduler.function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.stop[each.key].arn
+  source_arn    = aws_cloudwatch_event_rule.start_stop[each.key].arn
 }

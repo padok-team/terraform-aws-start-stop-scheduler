@@ -8,10 +8,14 @@ variable "name" {
 }
 
 variable "schedules" {
-  description = "The configuration of your crons. Select your resources with tags, and specify several crons for start and stop."
-  type        = list(map(map(string)))
-
-  # TODO validation
+  type = list(object({
+    name      = string
+    start     = string
+    stop      = string
+    tag_key   = string
+    tag_value = string
+  }))
+  description = "List of map containing, the following keys: name (for jobs name), start (cron for the start schedule), stop (cron for stop schedule), tag_key and tag_value (target recources)"
 }
 
 variable "tags" {
