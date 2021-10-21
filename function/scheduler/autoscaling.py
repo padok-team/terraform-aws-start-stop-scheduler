@@ -124,9 +124,11 @@ def list_asg_by_tags(tag_key: str, tag_value: str) -> List[AutoScalingGroup]:
         The names of the Auto Scaling groups
     """
 
+    asgs = []
+
+    # Standard ASG
     asg = boto3.client("autoscaling")
     ec2 = boto3.client("ec2")
-    asgs = []
     paginator = asg.get_paginator("describe_auto_scaling_groups")
 
     for page in paginator.paginate():
@@ -138,4 +140,46 @@ def list_asg_by_tags(tag_key: str, tag_value: str) -> List[AutoScalingGroup]:
                             name=group["AutoScalingGroupName"], ec2=ec2, asg=asg
                         )
                     )
+    # ASG from Node Group
+    eks = boto3.client('eks')
+
+    paginator_list_clusters = eks.get_paginator('list_clusters')
+    paginator_list_nodegroups = eks.get_paginator('list_nodegroups')
+
+    ## List clusters
+    clusters = []
+    for page in paginator_list_clusters.paginate():
+        clusters += page['clusters']
+
+    ## List nodegroups per cluster
+    list_clusters_node_groups = []
+    for cluster in clusters:
+        for page in paginator_list_nodegroups.paginate(clusterName = cluster):
+             list_clusters_node_groups.append({'cluster_name':cluster, 'node_groups': page['nodegroups']})
+    
+    ## List node group with tags
+    node_group_with_tag = []
+    for association in list_clusters_node_groups:
+        for node_group_name in association['node_groups']:
+            node_group_info = eks.describe_nodegroup(
+                clusterName = association['cluster_name'],
+                nodegroupName = node_group_name
+            )
+            tags = node_group_info['nodegroup']['tags']
+            try:
+                value = tags[tag_key]
+            except:
+                pass
+            else:
+                if value == tag_value:
+                    node_group_with_tag.append(node_group_info['nodegroup'])
+
+    ## List ASG with tags
+    for node_group in node_group_with_tag:
+        for aut_scaling_group in node_group['resources']['autoScalingGroups']:
+            asgs.append(
+                AutoScalingGroup(
+                    name=aut_scaling_group['name'], ec2=ec2, asg=asg
+                )
+            )
     return asgs
