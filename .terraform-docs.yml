@@ -22,7 +22,6 @@ output:
 #   enabled: false
 #   from: "outputs.tf"
 
-
 sort:
   enabled: true
   by:
