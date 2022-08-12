@@ -2,9 +2,18 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base",
-		":label(renovate)",
+    ":label(renovate)",
     ":semanticCommitTypeAll(fix)",
     ":separateMultipleMajorReleases",
-		":automergePatch"
+    ":automergePatch",
+    ":automergeBranch"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["*"],
+      "matchUpdateTypes": ["patch"],
+      "groupName": "all patch dependencies",
+      "groupSlug": "all-patch"
+    }
   ]
 }
