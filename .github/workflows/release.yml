@@ -1,0 +1,8 @@
+on:
+  push:
+    branches:
+      - main
+name: release
+jobs:
+  release:
+    uses: padok-team/github-workflows/.github/workflows/release.yml@main

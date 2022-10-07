@@ -1,0 +1,8 @@
+on:
+  pull_request:
+    branches:
+      - main
+name: semantic-check
+jobs:
+  semantic-check:
+    uses: padok-team/github-workflows/.github/workflows/semantic-check.yml@main
