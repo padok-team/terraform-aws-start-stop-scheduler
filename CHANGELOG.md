@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1](https://github.com/padok-team/terraform-aws-start-stop-scheduler/compare/v0.1.0...v0.1.1) (2022-08-12)
+
+
+### Bug Fixes
+
+* **examples:** add lock state ([8b16d85](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/8b16d8502b79206a179b552c50c627ed372b5396))
+* **examples:** set fixed version on example layers ([a8c1068](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/a8c10682371276c9b188d0d278c38601cf5b0f47))
+* **versioning:** use ~> syntax for module requirements ([d61e577](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/d61e5778fd960b4291b098d467f2a1fbea94f340))
+
 ## 0.1.0 (2022-07-29)
 
 
