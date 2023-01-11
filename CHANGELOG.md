@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/padok-team/terraform-aws-start-stop-scheduler/compare/v0.1.1...v0.2.0) (2023-01-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to latest aws and terraform version
+
+### Features
+
+* upgrade to latest aws and terraform version ([2ddcd91](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/2ddcd918a9960543948d556a487c370ef2dfc546))
+
+
+### Miscellaneous Chores
+
+* release 0.2.0 ([5dfbc8c](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/5dfbc8c92b6b09911594546d8ac11da3b782b9dc))
+
 ## [0.1.1](https://github.com/padok-team/terraform-aws-start-stop-scheduler/compare/v0.1.0...v0.1.1) (2022-08-12)
 
 
