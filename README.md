@@ -187,3 +187,7 @@ The project has the following folders and files:
 - /variables.tf: all the variables for the module
 - /output.tf: the outputs of the module
 - /README.md: this file
+
+## License
+
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
