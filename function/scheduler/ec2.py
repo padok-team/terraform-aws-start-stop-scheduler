@@ -26,7 +26,7 @@ class EC2Instance:
         Stop AWS EC2 instance
         """
         try:
-            self.ec2.stop_instances(InstanceIds=[self.instance_id])
+            self.ec2.terminate_instances(InstanceIds=[self.instance_id])
             logger.info(f"Stopped EC2 instance {self.instance_id}")
         except ClientError as exc:
             logger.warn(exc)

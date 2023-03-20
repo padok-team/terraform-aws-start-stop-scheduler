@@ -105,7 +105,6 @@ resource "aws_iam_role_policy" "lambda_rds" {
 data "aws_iam_policy_document" "lambda_ec2" {
   statement {
     actions = [
-      "ec2:StopInstances",
       "ec2:TerminateInstances",
     ]
 
