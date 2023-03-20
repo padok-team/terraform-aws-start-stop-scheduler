@@ -24,8 +24,7 @@ output:
 
 sort:
   enabled: true
-  by:
-    - required
+  by: required
 
 settings:
   anchor: true
