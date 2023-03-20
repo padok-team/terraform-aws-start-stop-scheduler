@@ -156,7 +156,7 @@ def list_asg_by_tags(tag_key: str, tag_value: str) -> List[AutoScalingGroup]:
     for cluster in clusters:
         for page in paginator_list_nodegroups.paginate(clusterName = cluster):
              list_clusters_node_groups.append({'cluster_name':cluster, 'node_groups': page['nodegroups']})
-    
+
     ## List node group with tags
     node_group_with_tag = []
     for association in list_clusters_node_groups:

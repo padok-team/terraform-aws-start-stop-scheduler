@@ -131,6 +131,7 @@ resource "aws_lambda_function" "start_stop_scheduler" {
       AWS_REGIONS  = var.aws_regions == null ? data.aws_region.current.name : join(", ", var.aws_regions)
       RDS_SCHEDULE = tostring(var.rds_schedule)
       ASG_SCHEDULE = tostring(var.asg_schedule)
+      EC2_SCHEDULE = tostring(var.ec2_schedule)
     }
   }
 
