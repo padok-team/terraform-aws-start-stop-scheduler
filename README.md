@@ -105,39 +105,40 @@ aws lambda invoke --function-name <function_name_from_output> --payload '{"actio
 
 ## Providers
 
-| Name                                                         | Version |
-| ------------------------------------------------------------ | ------- |
-| <a name="provider_archive"></a> [archive](#provider_archive) | >= 2    |
-| <a name="provider_aws"></a> [aws](#provider_aws)             | >= 3    |
+| Name | Version |
+|------|---------|
+| <a name="provider_archive"></a> [archive](#provider\_archive) | 2.3.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.59.0 |
 
 ## Inputs
 
-| Name                                                                                                            | Description                                                                                                                                                                    | Type                                                                                                                                | Default | Required |
-| --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | ------- | :------: |
-| <a name="input_name"></a> [name](#input_name)                                                                   | A name used to create resources in module                                                                                                                                      | `string`                                                                                                                            | n/a     |   yes    |
-| <a name="input_schedules"></a> [schedules](#input_schedules)                                                    | List of map containing, the following keys: name (for jobs name), start (cron for the start schedule), stop (cron for stop schedule), tag_key and tag_value (target recources) | <pre>list(object({<br> name = string<br> start = string<br> stop = string<br> tag_key = string<br> tag_value = string<br> }))</pre> | n/a     |   yes    |
-| <a name="input_asg_schedule"></a> [asg_schedule](#input_asg_schedule)                                           | Run the scheduler on AutoScalingGroup.                                                                                                                                         | `bool`                                                                                                                              | `true`  |    no    |
-| <a name="input_aws_regions"></a> [aws_regions](#input_aws_regions)                                              | List of AWS region where the scheduler will be applied. By default target the current region.                                                                                  | `list(string)`                                                                                                                      | `null`  |    no    |
-| <a name="input_custom_iam_lambda_role"></a> [custom_iam_lambda_role](#input_custom_iam_lambda_role)             | Use a custom role used for the lambda. Useful if you cannot create IAM ressource directly with your AWS profile, or to share a role between several resources.                 | `bool`                                                                                                                              | `false` |    no    |
-| <a name="input_custom_iam_lambda_role_arn"></a> [custom_iam_lambda_role_arn](#input_custom_iam_lambda_role_arn) | Custom role arn used for the lambda. Used only if custom_iam_lambda_role is set to true.                                                                                       | `string`                                                                                                                            | `null`  |    no    |
-| <a name="input_lambda_timeout"></a> [lambda_timeout](#input_lambda_timeout)                                     | Amount of time your Lambda Function has to run in seconds.                                                                                                                     | `number`                                                                                                                            | `10`    |    no    |
-| <a name="input_rds_schedule"></a> [rds_schedule](#input_rds_schedule)                                           | Run the scheduler on RDS.                                                                                                                                                      | `bool`                                                                                                                              | `true`  |    no    |
-| <a name="input_tags"></a> [tags](#input_tags)                                                                   | Custom Resource tags                                                                                                                                                           | `map(string)`                                                                                                                       | `{}`    |    no    |
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_name"></a> [name](#input\_name) | A name used to create resources in module | `string` | n/a | yes |
+| <a name="input_schedules"></a> [schedules](#input\_schedules) | List of map containing, the following keys: name (for jobs name), start (cron for the start schedule), stop (cron for stop schedule), tag\_key and tag\_value (target recources) | <pre>list(object({<br>    name      = string<br>    start     = string<br>    stop      = string<br>    tag_key   = string<br>    tag_value = string<br>  }))</pre> | n/a | yes |
+| <a name="input_asg_schedule"></a> [asg\_schedule](#input\_asg\_schedule) | Run the scheduler on AutoScalingGroup. | `bool` | `true` | no |
+| <a name="input_aws_regions"></a> [aws\_regions](#input\_aws\_regions) | List of AWS region where the scheduler will be applied. By default target the current region. | `list(string)` | `null` | no |
+| <a name="input_custom_iam_lambda_role"></a> [custom\_iam\_lambda\_role](#input\_custom\_iam\_lambda\_role) | Use a custom role used for the lambda. Useful if you cannot create IAM ressource directly with your AWS profile, or to share a role between several resources. | `bool` | `false` | no |
+| <a name="input_custom_iam_lambda_role_arn"></a> [custom\_iam\_lambda\_role\_arn](#input\_custom\_iam\_lambda\_role\_arn) | Custom role arn used for the lambda. Used only if custom\_iam\_lambda\_role is set to true. | `string` | `null` | no |
+| <a name="input_ec2_schedule"></a> [ec2\_schedule](#input\_ec2\_schedule) | Run the scheduler on EC2 instances. (only allows downscaling) | `bool` | `false` | no |
+| <a name="input_lambda_timeout"></a> [lambda\_timeout](#input\_lambda\_timeout) | Amount of time your Lambda Function has to run in seconds. | `number` | `10` | no |
+| <a name="input_rds_schedule"></a> [rds\_schedule](#input\_rds\_schedule) | Run the scheduler on RDS. | `bool` | `true` | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | Custom Resource tags | `map(string)` | `{}` | no |
 
 ## Outputs
 
-| Name                                                                                                                          | Description                                                          |
-| ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| <a name="output_clouwatch_event_rules"></a> [clouwatch_event_rules](#output_clouwatch_event_rules)                            | Cloudwatch event rules generated by the module to trigger the lambda |
-| <a name="output_lambda_function_arn"></a> [lambda_function_arn](#output_lambda_function_arn)                                  | The ARN of the Lambda function                                       |
-| <a name="output_lambda_function_invoke_arn"></a> [lambda_function_invoke_arn](#output_lambda_function_invoke_arn)             | The ARN to be used for invoking Lambda function from API Gateway     |
-| <a name="output_lambda_function_last_modified"></a> [lambda_function_last_modified](#output_lambda_function_last_modified)    | The date Lambda function was last modified                           |
-| <a name="output_lambda_function_log_group_arn"></a> [lambda_function_log_group_arn](#output_lambda_function_log_group_arn)    | The ARN of the lambda's log group                                    |
-| <a name="output_lambda_function_log_group_name"></a> [lambda_function_log_group_name](#output_lambda_function_log_group_name) | The name of the lambda's log group                                   |
-| <a name="output_lambda_function_name"></a> [lambda_function_name](#output_lambda_function_name)                               | The name of the Lambda function                                      |
-| <a name="output_lambda_function_version"></a> [lambda_function_version](#output_lambda_function_version)                      | Latest published version of your Lambda function                     |
-| <a name="output_lambda_iam_role_arn"></a> [lambda_iam_role_arn](#output_lambda_iam_role_arn)                                  | The ARN of the IAM role used by Lambda function                      |
-| <a name="output_lambda_iam_role_name"></a> [lambda_iam_role_name](#output_lambda_iam_role_name)                               | The name of the IAM role used by Lambda function                     |
+| Name | Description |
+|------|-------------|
+| <a name="output_clouwatch_event_rules"></a> [clouwatch\_event\_rules](#output\_clouwatch\_event\_rules) | Cloudwatch event rules generated by the module to trigger the lambda |
+| <a name="output_lambda_function_arn"></a> [lambda\_function\_arn](#output\_lambda\_function\_arn) | The ARN of the Lambda function |
+| <a name="output_lambda_function_invoke_arn"></a> [lambda\_function\_invoke\_arn](#output\_lambda\_function\_invoke\_arn) | The ARN to be used for invoking Lambda function from API Gateway |
+| <a name="output_lambda_function_last_modified"></a> [lambda\_function\_last\_modified](#output\_lambda\_function\_last\_modified) | The date Lambda function was last modified |
+| <a name="output_lambda_function_log_group_arn"></a> [lambda\_function\_log\_group\_arn](#output\_lambda\_function\_log\_group\_arn) | The ARN of the lambda's log group |
+| <a name="output_lambda_function_log_group_name"></a> [lambda\_function\_log\_group\_name](#output\_lambda\_function\_log\_group\_name) | The name of the lambda's log group |
+| <a name="output_lambda_function_name"></a> [lambda\_function\_name](#output\_lambda\_function\_name) | The name of the Lambda function |
+| <a name="output_lambda_function_version"></a> [lambda\_function\_version](#output\_lambda\_function\_version) | Latest published version of your Lambda function |
+| <a name="output_lambda_iam_role_arn"></a> [lambda\_iam\_role\_arn](#output\_lambda\_iam\_role\_arn) | The ARN of the IAM role used by Lambda function |
+| <a name="output_lambda_iam_role_name"></a> [lambda\_iam\_role\_name](#output\_lambda\_iam\_role\_name) | The name of the IAM role used by Lambda function |
 
 <!-- END_TF_DOCS -->
 

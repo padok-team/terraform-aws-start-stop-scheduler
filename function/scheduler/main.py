@@ -13,6 +13,7 @@ from typing import List, Dict
 
 from scheduler.autoscaling import list_asg_by_tags
 from scheduler.rds import list_rds_by_tags
+from scheduler.ec2 import list_ec2_by_tags
 
 logging.basicConfig()
 logger = logging.getLogger()
@@ -20,6 +21,7 @@ logger.setLevel(logging.INFO)
 
 ASG_SCHEDULE = os.getenv("ASG_SCHEDULE", "true")
 RDS_SCHEDULE = os.getenv("RDS_SCHEDULE", "true")
+EC2_SCHEDULE = os.getenv("EC2_SCHEDULE", "true")
 
 
 def lambda_handler(event, context):
@@ -81,6 +83,19 @@ def lambda_handler(event, context):
                 rds.stop()
 
         response["affected_resources"]["rds"] = [r.db_id for r in rds_list]
+
+    if EC2_SCHEDULE == "true":
+
+        logger.info(f"Select EC2 instances with tags {tag['key']}={tag['value']}")
+        ec2_list = list_ec2_by_tags(tag["key"], tag["value"])
+
+        logger.info(f"Run {action} function on {len(ec2_list)} ec2 instances")
+        for ec2 in ec2_list:
+            logger.info(f"Run {action} on {ec2.instance_id}")
+            if action == "stop":
+                ec2.stop()
+
+        response["affected_resources"]["ec2"] = [r.instance_id for r in ec2_list]
 
     return response
 

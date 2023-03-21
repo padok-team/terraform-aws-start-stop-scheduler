@@ -47,6 +47,12 @@ variable "asg_schedule" {
   type        = bool
 }
 
+variable "ec2_schedule" {
+  default     = false
+  description = "Run the scheduler on EC2 instances. (only allows downscaling)"
+  type        = bool
+}
+
 variable "aws_regions" {
   default     = null
   description = "List of AWS region where the scheduler will be applied. By default target the current region."

@@ -102,6 +102,26 @@ resource "aws_iam_role_policy" "lambda_rds" {
   policy      = data.aws_iam_policy_document.lambda_rds.json
 }
 
+data "aws_iam_policy_document" "lambda_ec2" {
+  statement {
+    actions = [
+      "ec2:TerminateInstances",
+    ]
+
+    resources = [
+      "*",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "lambda_ec2" {
+  count = var.custom_iam_lambda_role ? 0 : 1
+
+  name_prefix = "${local.name_prefix}_ec2"
+  role        = aws_iam_role.lambda[0].id
+  policy      = data.aws_iam_policy_document.lambda_ec2.json
+}
+
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_dir  = "${path.module}/function/"
@@ -131,6 +151,7 @@ resource "aws_lambda_function" "start_stop_scheduler" {
       AWS_REGIONS  = var.aws_regions == null ? data.aws_region.current.name : join(", ", var.aws_regions)
       RDS_SCHEDULE = tostring(var.rds_schedule)
       ASG_SCHEDULE = tostring(var.asg_schedule)
+      EC2_SCHEDULE = tostring(var.ec2_schedule)
     }
   }
 
