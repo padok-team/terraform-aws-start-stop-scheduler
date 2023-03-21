@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0](https://github.com/padok-team/terraform-aws-start-stop-scheduler/compare/v0.2.0...v0.3.0) (2023-03-21)
+
+
+### Features
+
+* **ec2:** add iam permission to stop instance ([357fbc6](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/357fbc6f04e55d54d7fba28c41aa6f98b576f416))
+* **ec2:** init ec2 support ([681a0f2](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/681a0f2691996fb9f8af1616157317bb11d75d85))
+* **ec2:** terminate instances rather than stop them ([c25e0cb](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/c25e0cb42e0ff2b9955e4c1936a51ab04c58c516))
+* **ec2:** update doc ([d252c11](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/d252c11d4beaef1eeeb9e352fdf1905d7e9047e4))
+
+
+### Bug Fixes
+
+* **doc:** update config ([f092fc2](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/f092fc20b07e3cfc6340fb1e26834c29dc87ff0a))
+
 ## [0.2.0](https://github.com/padok-team/terraform-aws-start-stop-scheduler/compare/v0.1.1...v0.2.0) (2023-01-11)
 
 
