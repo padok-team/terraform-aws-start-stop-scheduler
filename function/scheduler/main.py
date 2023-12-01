@@ -14,6 +14,7 @@ from typing import List, Dict
 from scheduler.autoscaling import list_asg_by_tags
 from scheduler.rds import list_rds_by_tags
 from scheduler.ec2 import list_ec2_by_tags
+from scheduler.ecs import list_ecs_services_by_tags
 
 logging.basicConfig()
 logger = logging.getLogger()
@@ -22,6 +23,7 @@ logger.setLevel(logging.INFO)
 ASG_SCHEDULE = os.getenv("ASG_SCHEDULE", "true")
 RDS_SCHEDULE = os.getenv("RDS_SCHEDULE", "true")
 EC2_SCHEDULE = os.getenv("EC2_SCHEDULE", "true")
+ECS_SCHEDULE = os.getenv("ECS_SCHEDULE", "true")
 
 
 def lambda_handler(event, context):
@@ -52,7 +54,6 @@ def lambda_handler(event, context):
     response = {"action": action, "tag": tag, "affected_resources": {}}
 
     if ASG_SCHEDULE == "true":
-
         logger.info(f"Select autoscaling groups with tags {tag['key']}={tag['value']}")
         asgs = list_asg_by_tags(tag["key"], tag["value"])
 
@@ -69,7 +70,6 @@ def lambda_handler(event, context):
         response["affected_resources"]["asg"] = [a.name for a in asgs]
 
     if RDS_SCHEDULE == "true":
-
         logger.info(f"Select RDS instances with tags {tag['key']}={tag['value']}")
         rds_list = list_rds_by_tags(tag["key"], tag["value"])
 
@@ -85,7 +85,6 @@ def lambda_handler(event, context):
         response["affected_resources"]["rds"] = [r.db_id for r in rds_list]
 
     if EC2_SCHEDULE == "true":
-
         logger.info(f"Select EC2 instances with tags {tag['key']}={tag['value']}")
         ec2_list = list_ec2_by_tags(tag["key"], tag["value"])
 
@@ -96,6 +95,21 @@ def lambda_handler(event, context):
                 ec2.stop()
 
         response["affected_resources"]["ec2"] = [r.instance_id for r in ec2_list]
+
+    if ECS_SCHEDULE == "true":
+        logger.info(f"Select ECS services with tags {tag['key']}={tag['value']}")
+        ecs_list = list_ecs_services_by_tags(tag["key"], tag["value"])
+
+        logger.info(f"Run {action} function on {len(ecs_list)} ecs services")
+
+        for ecs in ecs_list:
+            logger.info(f"Run {action} on {ecs.service_name}")
+            if action == "start":
+                ecs.start()
+            elif action == "stop":
+                ecs.stop()
+
+        response["affected_resources"]["ecs"] = [r.service_name for r in ecs_list]
 
     return response
 

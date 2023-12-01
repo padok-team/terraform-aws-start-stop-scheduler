@@ -10,6 +10,7 @@ It supports :
 
 - **AutoscalingGroups**: it suspends the ASG and terminates its instances. At the start, it resumes the ASG, which launches new instances by itself.
 - RDS: support simple RDS DB instance. Run the function stop and start on them.
+- ECS: scaling of ECS services to 0
 - ~~EC2 instances~~: maybe
 
 The lambda function is _idempotent_, so you can launch it on an already stopped/started resource without any risks! It simplifies your job when planning with crons.
@@ -102,27 +103,64 @@ aws lambda invoke --function-name <function_name_from_output> --payload '{"actio
 ```
 
 <!-- BEGIN_TF_DOCS -->
+## Requirements
+
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.0 |
+| <a name="requirement_archive"></a> [archive](#requirement\_archive) | ~> 2.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_archive"></a> [archive](#provider\_archive) | 2.3.0 |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.59.0 |
+| <a name="provider_archive"></a> [archive](#provider\_archive) | ~> 2.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5.0 |
+
+## Modules
+
+No modules.
+
+## Resources
+
+| Name | Type |
+|------|------|
+| [aws_cloudwatch_event_rule.start_stop](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
+| [aws_cloudwatch_event_target.start_stop](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
+| [aws_cloudwatch_log_group.start_stop_scheduler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
+| [aws_iam_role.lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy.lambda_autoscalinggroup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy.lambda_ec2](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy.lambda_ecs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy.lambda_rds](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy.lambda_tagging_api](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy_attachment.lambda_basic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_lambda_function.start_stop_scheduler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) | resource |
+| [aws_lambda_permission.allow_cloudwatch_start](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission) | resource |
+| [archive_file.lambda_zip](https://registry.terraform.io/providers/hashicorp/archive/latest/docs/data-sources/file) | data source |
+| [aws_iam_policy_document.lambda_assume_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.lambda_autoscalinggroup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.lambda_ec2](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.lambda_ecs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.lambda_rds](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.lambda_tagging_api](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_name"></a> [name](#input\_name) | A name used to create resources in module | `string` | n/a | yes |
-| <a name="input_schedules"></a> [schedules](#input\_schedules) | List of map containing, the following keys: name (for jobs name), start (cron for the start schedule), stop (cron for stop schedule), tag\_key and tag\_value (target recources) | <pre>list(object({<br>    name      = string<br>    start     = string<br>    stop      = string<br>    tag_key   = string<br>    tag_value = string<br>  }))</pre> | n/a | yes |
 | <a name="input_asg_schedule"></a> [asg\_schedule](#input\_asg\_schedule) | Run the scheduler on AutoScalingGroup. | `bool` | `true` | no |
 | <a name="input_aws_regions"></a> [aws\_regions](#input\_aws\_regions) | List of AWS region where the scheduler will be applied. By default target the current region. | `list(string)` | `null` | no |
 | <a name="input_custom_iam_lambda_role"></a> [custom\_iam\_lambda\_role](#input\_custom\_iam\_lambda\_role) | Use a custom role used for the lambda. Useful if you cannot create IAM ressource directly with your AWS profile, or to share a role between several resources. | `bool` | `false` | no |
 | <a name="input_custom_iam_lambda_role_arn"></a> [custom\_iam\_lambda\_role\_arn](#input\_custom\_iam\_lambda\_role\_arn) | Custom role arn used for the lambda. Used only if custom\_iam\_lambda\_role is set to true. | `string` | `null` | no |
 | <a name="input_ec2_schedule"></a> [ec2\_schedule](#input\_ec2\_schedule) | Run the scheduler on EC2 instances. (only allows downscaling) | `bool` | `false` | no |
+| <a name="input_ecs_schedule"></a> [ecs\_schedule](#input\_ecs\_schedule) | Run the scheduler on ECS services. | `bool` | `false` | no |
 | <a name="input_lambda_timeout"></a> [lambda\_timeout](#input\_lambda\_timeout) | Amount of time your Lambda Function has to run in seconds. | `number` | `10` | no |
+| <a name="input_name"></a> [name](#input\_name) | A name used to create resources in module | `string` | n/a | yes |
 | <a name="input_rds_schedule"></a> [rds\_schedule](#input\_rds\_schedule) | Run the scheduler on RDS. | `bool` | `true` | no |
+| <a name="input_schedules"></a> [schedules](#input\_schedules) | List of map containing, the following keys: name (for jobs name), start (cron for the start schedule), stop (cron for stop schedule), tag\_key and tag\_value (target recources) | <pre>list(object({<br>    name      = string<br>    start     = string<br>    stop      = string<br>    tag_key   = string<br>    tag_value = string<br>  }))</pre> | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Custom Resource tags | `map(string)` | `{}` | no |
 
 ## Outputs
@@ -139,7 +177,6 @@ aws lambda invoke --function-name <function_name_from_output> --payload '{"actio
 | <a name="output_lambda_function_version"></a> [lambda\_function\_version](#output\_lambda\_function\_version) | Latest published version of your Lambda function |
 | <a name="output_lambda_iam_role_arn"></a> [lambda\_iam\_role\_arn](#output\_lambda\_iam\_role\_arn) | The ARN of the IAM role used by Lambda function |
 | <a name="output_lambda_iam_role_name"></a> [lambda\_iam\_role\_name](#output\_lambda\_iam\_role\_name) | The name of the IAM role used by Lambda function |
-
 <!-- END_TF_DOCS -->
 
 ## Advanced features
