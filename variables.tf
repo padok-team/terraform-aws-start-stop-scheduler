@@ -53,6 +53,12 @@ variable "ec2_schedule" {
   type        = bool
 }
 
+variable "ecs_schedule" {
+  default     = false
+  description = "Run the scheduler on ECS services."
+  type        = bool
+}
+
 variable "aws_regions" {
   default     = null
   description = "List of AWS region where the scheduler will be applied. By default target the current region."

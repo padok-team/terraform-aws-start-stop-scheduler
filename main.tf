@@ -114,6 +114,26 @@ data "aws_iam_policy_document" "lambda_ec2" {
   }
 }
 
+resource "aws_iam_role_policy" "lambda_ecs" {
+  count = var.custom_iam_lambda_role ? 0 : 1
+
+  name_prefix = "${local.name_prefix}_ecs"
+  role        = aws_iam_role.lambda[0].id
+  policy      = data.aws_iam_policy_document.lambda_ecs.json
+}
+
+data "aws_iam_policy_document" "lambda_ecs" {
+  statement {
+    actions = [
+      "ecs:UpdateService",
+    ]
+
+    resources = [
+      "*",
+    ]
+  }
+}
+
 resource "aws_iam_role_policy" "lambda_ec2" {
   count = var.custom_iam_lambda_role ? 0 : 1
 
@@ -144,7 +164,7 @@ resource "aws_lambda_function" "start_stop_scheduler" {
 
   source_code_hash = filebase64sha256(data.archive_file.lambda_zip.output_path)
 
-  runtime = "python3.8"
+  runtime = "python3.11"
 
   environment {
     variables = {
@@ -152,6 +172,7 @@ resource "aws_lambda_function" "start_stop_scheduler" {
       RDS_SCHEDULE = tostring(var.rds_schedule)
       ASG_SCHEDULE = tostring(var.asg_schedule)
       EC2_SCHEDULE = tostring(var.ec2_schedule)
+      ECS_SCHEDULE = tostring(var.ecs_schedule)
     }
   }
 
