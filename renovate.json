@@ -1,19 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
-    ":label(renovate)",
-    ":semanticCommitTypeAll(fix)",
-    ":separateMultipleMajorReleases",
-    ":automergePatch",
-    ":automergeBranch"
-  ],
-  "packageRules": [
-    {
-      "matchPackagePatterns": ["*"],
-      "matchUpdateTypes": ["patch"],
-      "groupName": "all patch dependencies",
-      "groupSlug": "all-patch"
-    }
+    "github>padok-team/renovate-config"
   ]
 }
