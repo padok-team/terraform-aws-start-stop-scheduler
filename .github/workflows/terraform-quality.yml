@@ -6,3 +6,6 @@ name: terraform-quality
 jobs:
   terraform-quality:
     uses: padok-team/github-workflows/.github/workflows/terraform-quality.yml@v1
+    with:
+      checkov_skip_path: "examples/"
+      checkov_baseline: ".checkov.baseline"

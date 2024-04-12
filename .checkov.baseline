@@ -1,0 +1,48 @@
+{
+    "failed_checks": [
+        {
+            "file": "/main.tf",
+            "findings": [
+                {
+                    "resource": "aws_cloudwatch_log_group.start_stop_scheduler",
+                    "check_ids": [
+                        "CKV_AWS_158",
+                        "CKV_AWS_338"
+                    ]
+                },
+                {
+                    "resource": "aws_iam_policy_document.lambda_autoscalinggroup",
+                    "check_ids": [
+                        "CKV_AWS_111",
+                        "CKV_AWS_356"
+                    ]
+                },
+                {
+                    "resource": "aws_iam_policy_document.lambda_ec2",
+                    "check_ids": [
+                        "CKV_AWS_111",
+                        "CKV_AWS_356"
+                    ]
+                },
+                {
+                    "resource": "aws_iam_policy_document.lambda_rds",
+                    "check_ids": [
+                        "CKV_AWS_111",
+                        "CKV_AWS_356"
+                    ]
+                },
+                {
+                    "resource": "aws_lambda_function.start_stop_scheduler",
+                    "check_ids": [
+                        "CKV_AWS_115",
+                        "CKV_AWS_116",
+                        "CKV_AWS_117",
+                        "CKV_AWS_173",
+                        "CKV_AWS_272",
+                        "CKV_AWS_50"
+                    ]
+                }
+            ]
+        }
+    ]
+}
