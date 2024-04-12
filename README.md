@@ -36,10 +36,6 @@ If you don't know much about crons, check <https://cron.help/>.
 
 :alarm-clock: All the cronjobs expressions are in UTC time ! Check your current timezone and do the maths.
 
-## Compatibility
-
-This module is meant for use with Terraform >= 0.13 and `aws` provider >= 2.
-
 ## Usage
 
 This module can be installed using Padok's registry.
@@ -119,8 +115,8 @@ aws lambda invoke --function-name <function_name_from_output> --payload '{"actio
 
 | Name | Version |
 |------|---------|
-| <a name="provider_archive"></a> [archive](#provider\_archive) | 2.3.0 |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.59.0 |
+| <a name="provider_archive"></a> [archive](#provider\_archive) | ~> 2.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 4.0 |
 
 ## Inputs
 
@@ -133,7 +129,7 @@ aws lambda invoke --function-name <function_name_from_output> --payload '{"actio
 | <a name="input_custom_iam_lambda_role"></a> [custom\_iam\_lambda\_role](#input\_custom\_iam\_lambda\_role) | Use a custom role used for the lambda. Useful if you cannot create IAM ressource directly with your AWS profile, or to share a role between several resources. | `bool` | `false` | no |
 | <a name="input_custom_iam_lambda_role_arn"></a> [custom\_iam\_lambda\_role\_arn](#input\_custom\_iam\_lambda\_role\_arn) | Custom role arn used for the lambda. Used only if custom\_iam\_lambda\_role is set to true. | `string` | `null` | no |
 | <a name="input_ec2_schedule"></a> [ec2\_schedule](#input\_ec2\_schedule) | Run the scheduler on EC2 instances. (only allows downscaling) | `bool` | `false` | no |
-| <a name="input_lambda_timeout"></a> [lambda\_timeout](#input\_lambda\_timeout) | Amount of time your Lambda Function has to run in seconds. | `number` | `10` | no |
+| <a name="input_lambda_timeout"></a> [lambda\_timeout](#input\_lambda\_timeout) | Amount of time your Lambda Function has to run in seconds. | `number` | `120` | no |
 | <a name="input_rds_schedule"></a> [rds\_schedule](#input\_rds\_schedule) | Run the scheduler on RDS. | `bool` | `true` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Custom Resource tags | `map(string)` | `{}` | no |
 
