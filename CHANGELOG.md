@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1](https://github.com/padok-team/terraform-aws-start-stop-scheduler/compare/v0.3.0...v0.3.1) (2024-04-12)
+
+
+### Bug Fixes
+
+* adjust checkov to pass workflow ([9db23b2](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/9db23b21480db1dcbaa14fc569535cea72c0b007))
+* set a higher default timeout ([c9865f6](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/c9865f60ec2a5d31aa5d94d82c5a82c9d781689e))
+* upgrade tflint conf ([d184fd9](https://github.com/padok-team/terraform-aws-start-stop-scheduler/commit/d184fd96d331f0034701c8b4d4f11e608b5d6939))
+
 ## [0.3.0](https://github.com/padok-team/terraform-aws-start-stop-scheduler/compare/v0.2.0...v0.3.0) (2023-03-21)
 
 
