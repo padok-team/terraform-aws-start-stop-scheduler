@@ -9,12 +9,21 @@ It uses a _lambda_ function and a few _cronjobs_ to trigger a _start_ or _stop_ 
 It supports :
 
 - **AutoscalingGroups**: it suspends the ASG and terminates its instances. At the start, it resumes the ASG, which launches new instances by itself.
-- RDS: support simple RDS DB instance. Run the function stop and start on them.
-- ~~EC2 instances~~: maybe
+- **EKS node groups**: if a node group is tagged, it will use the ASG handler for its underlying ASG.
+- **RDS**: Run the function stop and start on them.
+- **EC2 instances**: terminate instances. ⚠️ It does not start them back, as it is not stopped but terminated. Use with caution.
 
 The lambda function is _idempotent_, so you can launch it on an already stopped/started resource without any risks! It simplifies your job when planning with crons.
 
 ![aws_schema](./docs/assets/aws_schema.png)
+
+### Why not use AWS Instance Scheduler instead?
+
+[AWS Instance Scheduler](https://github.com/aws-solutions/instance-scheduler-on-aws/tree/main) is the official AWS solution for this problem. It is a more complete solution, using a controlle approach: a lambda regularly checks the current time and decides to start or stop resources. It is therefore more resilient.
+
+However it is also more complex and needs to be setup with CloudFormation.
+
+A good rule of thumb to decide: if you have a few accounts and want to keep it simple, use this Terraform module. If you manage a multi-account cloud organization, check for the more complete and robust _Instance Scheduler_.
 
 ### About cronjobs
 
@@ -26,10 +35,6 @@ If you don't know much about crons, check <https://cron.help/>.
 - You cannot set '\*' for both Day-of-week and Day-of-month
 
 :alarm-clock: All the cronjobs expressions are in UTC time ! Check your current timezone and do the maths.
-
-## Compatibility
-
-This module is meant for use with Terraform >= 0.13 and `aws` provider >= 2.
 
 ## Usage
 
@@ -55,6 +60,9 @@ module "aws_start_stop_scheduler" {
       tag_value = "staging",
     }
   ]
+
+  # to adjust if you have a lot of resources to manage
+  # lamda_timeout = 600
 }
 ```
 
@@ -107,8 +115,8 @@ aws lambda invoke --function-name <function_name_from_output> --payload '{"actio
 
 | Name | Version |
 |------|---------|
-| <a name="provider_archive"></a> [archive](#provider\_archive) | 2.3.0 |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.59.0 |
+| <a name="provider_archive"></a> [archive](#provider\_archive) | ~> 2.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 4.0 |
 
 ## Inputs
 
@@ -121,7 +129,7 @@ aws lambda invoke --function-name <function_name_from_output> --payload '{"actio
 | <a name="input_custom_iam_lambda_role"></a> [custom\_iam\_lambda\_role](#input\_custom\_iam\_lambda\_role) | Use a custom role used for the lambda. Useful if you cannot create IAM ressource directly with your AWS profile, or to share a role between several resources. | `bool` | `false` | no |
 | <a name="input_custom_iam_lambda_role_arn"></a> [custom\_iam\_lambda\_role\_arn](#input\_custom\_iam\_lambda\_role\_arn) | Custom role arn used for the lambda. Used only if custom\_iam\_lambda\_role is set to true. | `string` | `null` | no |
 | <a name="input_ec2_schedule"></a> [ec2\_schedule](#input\_ec2\_schedule) | Run the scheduler on EC2 instances. (only allows downscaling) | `bool` | `false` | no |
-| <a name="input_lambda_timeout"></a> [lambda\_timeout](#input\_lambda\_timeout) | Amount of time your Lambda Function has to run in seconds. | `number` | `10` | no |
+| <a name="input_lambda_timeout"></a> [lambda\_timeout](#input\_lambda\_timeout) | Amount of time your Lambda Function has to run in seconds. | `number` | `120` | no |
 | <a name="input_rds_schedule"></a> [rds\_schedule](#input\_rds\_schedule) | Run the scheduler on RDS. | `bool` | `true` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Custom Resource tags | `map(string)` | `{}` | no |
 
@@ -160,6 +168,59 @@ module "aws_start_stop_scheduler" {
 ```
 
 You have a full working example in [examples/custom_role](./examples/custom_role).
+
+### Scale down an EKS cluster with Karpenter
+
+If you are using Karpenter on its own node group, which then schedules the pods on EC2 instances, you should
+
+1. First scale down the node group with Karpenter, to prevent it from scaling up new instances.
+2. Then stop the EC2 instances.
+
+When you scale up the node group, Karpenter will schedule the pods on the new instances. It will also cleanup _ghost_ Kubernetes nodes from the API server.
+
+Here an example of how to do it :
+
+```hcl
+schedules = [
+  {
+    name      = "weekday_asg_working_hours",
+    start     = "0 6 ? * MON-FRI *",
+    stop      = "0 19 ? * MON-FRI *", # 19:00
+    tag_key   = "scheduler",
+    tag_value = "karpenter_node_group" # EKS node group hosting karpenter is tagged with this
+  },
+  {
+    name      = "weekday_ec2_karpenter_working_hours",
+    start     = "", # do not scale up
+    stop      = "5 19 ? * MON-FRI *", # 19:05, 5 min after the ASG
+    tag_key   = "scheduler",
+    tag_value = "ec2_karpenter" # EC2 instances launched by Karpenter are tagged with this
+  },
+]
+```
+
+### Gracefully handle databases shutdown for applications
+
+To avoid any issues with application lock in databases (for example migrations), you should shutdown databases after the application has been stopped. For this you may use two different schedules :
+
+```hcl
+ schedules = [
+    {
+      name      = "weekday_asg_working_hours",
+      start     = "0 6 ? * MON-FRI *",
+      stop      = "0 19 ? * MON-FRI *", # 30 min before the RDS
+      tag_key   = "scheduler",
+      tag_value = "asg"
+    },
+    {
+      name      = "weekday_rds_working_hours",
+      start     = "30 5 ? * MON-FRI *",
+      stop      = "30 19 ? * MON-FRI *",
+      tag_key   = "scheduler",
+      tag_value = "rds"
+    },
+  ]
+```
 
 ## Contributing
 

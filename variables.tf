@@ -25,7 +25,7 @@ variable "tags" {
 }
 
 variable "lambda_timeout" {
-  default     = 10
+  default     = 120
   description = "Amount of time your Lambda Function has to run in seconds."
   type        = number
 
