@@ -203,6 +203,28 @@ schedules = [
 ]
 ```
 
+### Gracefully handle databases shutdown for applications
+
+To avoid any issues with application lock in databases (for example migrations), you should shutdown databases after the application has been stopped. For this you may use two different schedules :
+
+```hcl
+ schedules = [
+    {
+      name      = "weekday_asg_working_hours",
+      start     = "0 6 ? * MON-FRI *",
+      stop      = "0 19 ? * MON-FRI *", # 30 min before the RDS
+      tag_key   = "scheduler",
+      tag_value = "asg"
+    },
+    {
+      name      = "weekday_rds_working_hours",
+      start     = "30 5 ? * MON-FRI *",
+      stop      = "30 19 ? * MON-FRI *",
+      tag_key   = "scheduler",
+      tag_value = "rds"
+    },
+  ]
+```
 
 ## Contributing
 
