@@ -3,12 +3,9 @@ on:
     branches:
       - main
 
-name: release-please
+name: release
 jobs:
-  release-please:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: google-github-actions/release-please-action@db8f2c60ee802b3748b512940dde88eabd7b7e01 # v3
-        with:
-          release-type: terraform-module
-          default-branch: main
+  release:
+    uses: padok-team/github-workflows/.github/workflows/release.yml@v1
+    with:
+      update-major-minor-tags: true
