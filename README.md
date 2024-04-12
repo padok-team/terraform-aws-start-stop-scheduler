@@ -173,6 +173,37 @@ module "aws_start_stop_scheduler" {
 
 You have a full working example in [examples/custom_role](./examples/custom_role).
 
+### Scale down an EKS cluster with Karpenter
+
+If you are using Karpenter on its own node group, which then schedules the pods on EC2 instances, you should
+
+1. First scale down the node group with Karpenter, to prevent it from scaling up new instances.
+2. Then stop the EC2 instances.
+
+When you scale up the node group, Karpenter will schedule the pods on the new instances. It will also cleanup _ghost_ Kubernetes nodes from the API server.
+
+Here an example of how to do it :
+
+```hcl
+schedules = [
+  {
+    name      = "weekday_asg_working_hours",
+    start     = "0 6 ? * MON-FRI *",
+    stop      = "0 19 ? * MON-FRI *", # 19:00
+    tag_key   = "scheduler",
+    tag_value = "karpenter_node_group" # EKS node group hosting karpenter is tagged with this
+  },
+  {
+    name      = "weekday_ec2_karpenter_working_hours",
+    start     = "", # do not scale up
+    stop      = "5 19 ? * MON-FRI *", # 19:05, 5 min after the ASG
+    tag_key   = "scheduler",
+    tag_value = "ec2_karpenter" # EC2 instances launched by Karpenter are tagged with this
+  },
+]
+```
+
+
 ## Contributing
 
 Refer to the [contribution guidelines](./CONTRIBUTING.md) for
