@@ -9,12 +9,21 @@ It uses a _lambda_ function and a few _cronjobs_ to trigger a _start_ or _stop_ 
 It supports :
 
 - **AutoscalingGroups**: it suspends the ASG and terminates its instances. At the start, it resumes the ASG, which launches new instances by itself.
-- RDS: support simple RDS DB instance. Run the function stop and start on them.
-- ~~EC2 instances~~: maybe
+- **EKS node groups**: if a node group is tagged, it will use the ASG handler for its underlying ASG.
+- **RDS**: Run the function stop and start on them.
+- **EC2 instances**: terminate instances. ⚠️ It does not start them back, as it is not stopped but terminated. Use with caution.
 
 The lambda function is _idempotent_, so you can launch it on an already stopped/started resource without any risks! It simplifies your job when planning with crons.
 
 ![aws_schema](./docs/assets/aws_schema.png)
+
+### Why not use AWS Instance Scheduler instead?
+
+[AWS Instance Scheduler](https://github.com/aws-solutions/instance-scheduler-on-aws/tree/main) is the official AWS solution for this problem. It is a more complete solution, using a controlle approach: a lambda regularly checks the current time and decides to start or stop resources. It is therefore more resilient.
+
+However it is also more complex and needs to be setup with CloudFormation.
+
+A good rule of thumb to decide: if you have a few accounts and want to keep it simple, use this Terraform module. If you manage a multi-account cloud organization, check for the more complete and robust _Instance Scheduler_.
 
 ### About cronjobs
 
