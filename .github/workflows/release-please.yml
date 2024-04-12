@@ -8,4 +8,5 @@ jobs:
   release:
     uses: padok-team/github-workflows/.github/workflows/release.yml@v1
     with:
+      release-type: "terraform-module"
       update-major-minor-tags: true
