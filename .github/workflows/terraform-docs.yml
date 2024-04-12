@@ -1,0 +1,9 @@
+on:
+  push:
+    branches:
+      - main # your trunk branch
+
+name: terraform-docs
+jobs:
+  terraform-docs:
+    uses: padok-team/github-workflows/.github/workflows/terraform-docs.yml@v1
