@@ -64,6 +64,9 @@ module "aws_start_stop_scheduler" {
       tag_value = "staging",
     }
   ]
+
+  # to adjust if you have a lot of resources to manage
+  # lamda_timeout = 600
 }
 ```
 
