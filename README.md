@@ -47,8 +47,8 @@ For example, if you want to shutdown during nights and weekends all staging reso
 
 ```hcl
 module "aws_start_stop_scheduler" {
-  source = "terraform-registry.playground.padok.cloud/incubator/start_stop_scheduler/aws"
-  version = "v0.5.0"
+  source = "github.com/padok-team/terraform-aws-start-stop-scheduler"
+  version = "v0.3.1"
 
   name = "start_stop_scheduler"
   schedules = [
@@ -197,6 +197,8 @@ schedules = [
     tag_value = "ec2_karpenter" # EC2 instances launched by Karpenter are tagged with this
   },
 ]
+
+ec2_schedule = true # karpenter spawn raw EC2 instances
 ```
 
 ### Gracefully handle databases shutdown for applications
