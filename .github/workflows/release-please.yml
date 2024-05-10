@@ -6,7 +6,7 @@ on:
 name: release
 jobs:
   release:
-    uses: padok-team/github-workflows/.github/workflows/release.yml@465a7edc655da9d63521b65ff30025e884e82d35 # v1
+    uses: padok-team/github-workflows/.github/workflows/release.yml@b28d51dba218d459ca0049b9a879d72ec0d84e6e # v1
     with:
       release-type: "terraform-module"
       update-major-minor-tags: true
