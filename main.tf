@@ -144,7 +144,7 @@ resource "aws_lambda_function" "start_stop_scheduler" {
 
   source_code_hash = filebase64sha256(data.archive_file.lambda_zip.output_path)
 
-  runtime = "python3.8"
+  runtime = "python3.12"
 
   environment {
     variables = {
