@@ -156,7 +156,7 @@ resource "aws_lambda_function" "start_stop_scheduler" {
 
   environment {
     variables = {
-      AWS_REGIONS = var.aws_regions == null ? data.aws_region.current.id : join(", ", var.aws_regions)
+      AWS_REGIONS = var.aws_regions == null ? data.aws_region.current.region : join(", ", var.aws_regions)
       RDS_SCHEDULE = tostring(var.rds_schedule)
       ASG_SCHEDULE = tostring(var.asg_schedule)
       EC2_SCHEDULE = tostring(var.ec2_schedule)
