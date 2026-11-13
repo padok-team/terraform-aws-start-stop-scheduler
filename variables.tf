@@ -18,6 +18,12 @@ variable "schedules" {
   description = "List of map containing, the following keys: name (for jobs name), start (cron for the start schedule), stop (cron for stop schedule), tag_key and tag_value (target recources)"
 }
 
+variable "timezone" {
+  default     = null
+  description = "IANA timezone the start/stop crons are evaluated in (e.g. Europe/Paris), so they follow daylight saving time. Uses EventBridge Scheduler when set; null keeps the legacy EventBridge rules, evaluated in UTC."
+  type        = string
+}
+
 variable "tags" {
   default     = {}
   description = "Custom Resource tags"

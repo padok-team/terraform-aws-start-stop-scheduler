@@ -156,7 +156,7 @@ resource "aws_lambda_function" "start_stop_scheduler" {
 
   environment {
     variables = {
-      AWS_REGIONS = var.aws_regions == null ? data.aws_region.current.region : join(", ", var.aws_regions)
+      AWS_REGIONS  = var.aws_regions == null ? data.aws_region.current.region : join(", ", var.aws_regions)
       RDS_SCHEDULE = tostring(var.rds_schedule)
       ASG_SCHEDULE = tostring(var.asg_schedule)
       EC2_SCHEDULE = tostring(var.ec2_schedule)
@@ -193,7 +193,7 @@ locals {
 
 
 resource "aws_cloudwatch_event_rule" "start_stop" {
-  for_each = local.schedulers_map
+  for_each = var.timezone == null ? local.schedulers_map : {}
 
   name                = "${local.name_prefix}_${each.key}"
   schedule_expression = "cron(${each.value.cron})"
@@ -202,7 +202,7 @@ resource "aws_cloudwatch_event_rule" "start_stop" {
 }
 
 resource "aws_cloudwatch_event_target" "start_stop" {
-  for_each = local.schedulers_map
+  for_each = var.timezone == null ? local.schedulers_map : {}
 
   rule = aws_cloudwatch_event_rule.start_stop[each.key].id
   arn  = aws_lambda_function.start_stop_scheduler.arn
@@ -216,10 +216,74 @@ resource "aws_cloudwatch_event_target" "start_stop" {
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_start" {
-  for_each = local.schedulers_map
+  for_each = var.timezone == null ? local.schedulers_map : {}
 
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.start_stop_scheduler.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.start_stop[each.key].arn
+}
+
+# -- EventBridge Scheduler, used when var.timezone is set: unlike EventBridge
+# rules (UTC only), schedules are evaluated in a timezone and follow DST.
+
+data "aws_iam_policy_document" "scheduler_assume_role_policy" {
+  count = var.timezone == null ? 0 : 1
+
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["scheduler.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "scheduler" {
+  count              = var.timezone == null ? 0 : 1
+  name_prefix        = "${local.name_prefix}_eb"
+  assume_role_policy = data.aws_iam_policy_document.scheduler_assume_role_policy[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy" "scheduler_invoke_lambda" {
+  count = var.timezone == null ? 0 : 1
+  name  = "invoke-start-stop-lambda"
+  role  = aws_iam_role.scheduler[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["lambda:InvokeFunction"]
+      Resource = [aws_lambda_function.start_stop_scheduler.arn]
+    }]
+  })
+}
+
+resource "aws_scheduler_schedule" "start_stop" {
+  for_each = var.timezone == null ? {} : local.schedulers_map
+
+  name                         = "${local.name_prefix}_${each.key}"
+  description                  = "${each.key} - ${each.value.tag_key}=${each.value.tag_value}"
+  schedule_expression          = "cron(${each.value.cron})"
+  schedule_expression_timezone = var.timezone
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  target {
+    arn      = aws_lambda_function.start_stop_scheduler.arn
+    role_arn = aws_iam_role.scheduler[0].arn
+    input = jsonencode({
+      "action" : each.value.action,
+      "tag" : {
+        "key" : each.value.tag_key,
+        "value" : each.value.tag_value,
+      }
+    })
+  }
 }
